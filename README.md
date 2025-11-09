@@ -2,7 +2,7 @@ Co-Draw: A Collaborative Drawing Mockup
 
 Hey! Welcome to the Co-Draw project files. This application is a front-end web client designed to act as a real-time, collaborative drawing canvas.
 
-Right now, the code we have is a fully functional front-end drawing application that is styled beautifully in a dark mode. It also contains the structure and logic hooks needed to connect to a future Node.js server for true real-time collaboration.
+The code we have is a fully functional front-end drawing application that is styled beautifully in a dark mode. It also contains the structure and logic hooks needed to connect to a future Node.js server for true real-time collaboration.
 
 **Features**
 
