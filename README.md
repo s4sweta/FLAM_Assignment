@@ -2,15 +2,7 @@ Co-Draw: A Collaborative Drawing Mockup
 
 Hey! Welcome to the Co-Draw project files. This application is a front-end web client designed to act as a real-time, collaborative drawing canvas.
 
-Right now, the code you have is a fully functional front-end drawing application that is styled beautifully in a dark mode. It also contains the structure and logic hooks needed to connect to a future Node.js server for true real-time collaboration.
-
-**How to Run the App**
-
-Since this project is pure HTML, CSS, and JavaScript (with no server dependency for local drawing), getting started is incredibly easy:
-Make sure all the files (index.html, style.css, websocket-client.js, canvas-manager.js, main.js) are in the same folder.
-Open index.html in any modern web browser (like Chrome, Firefox, or Safari).
-
-That's it! You should be able to start drawing immediately.
+Right now, the code we have is a fully functional front-end drawing application that is styled beautifully in a dark mode. It also contains the structure and logic hooks needed to connect to a future Node.js server for true real-time collaboration.
 
 **Features**
 
@@ -25,9 +17,9 @@ Collaboration Mockup: The layout includes spaces for the Online Users list and L
 **The Collaboration Catch (The "Mockup" Part)**
 
 In the original single file, we included MOCK classes for WebSocketClient. 
-This means, You can draw locally, but the strokes aren't saved persistently or shared. When you use the "Undo Global" or "Clear Canvas" buttons, the code pops up a confirmation alert because it needs a running server to actually perform those global actions.
+This means, We can draw locally, but the strokes aren't saved persistently or shared. When we use the "Undo Global" or "Clear Canvas" buttons, the code pops up a confirmation alert because it needs a running server to actually perform those global actions.
 The user list and other cursors are static HTML. The websocket-client.js file is currently a dummy class that just logs what it's trying to send (like stroke data), but it doesn't actually connect to a server.
-To make this a true collaborative application, you would replace the logic inside websocket-client.js with a proper Socket.io client implementation that talks to a back-end server.
+To make this a true collaborative application, we would replace the logic inside websocket-client.js with a proper Socket.io client implementation that talks to a back-end server.
 
 **Project Structure**
 
