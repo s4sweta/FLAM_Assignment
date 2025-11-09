@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Drawing Canvas (Mockup)</title>
+    <!-- 
+        All CSS from client/style.css is placed directly here for the mockup.
+        This provides the dark theme and the grid layout.
+    -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        :root {
+            --primary-color: #1E88E5; /* Blue */
+            --background-dark: #1f2937; /* Gray-800 */
+            --background-light: #374151; /* Gray-700 */
+            --text-color: #f3f4f6; /* Gray-100 */
+            --canvas-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #app-container {
+            display: grid;
+            grid-template-areas: 
+                "header header"
+                "main sidebar";
+            grid-template-columns: 3fr 1fr;
+            max-width: 1400px;
+            width: 100%;
+            gap: 15px;
+        }
+
+        /* --- Header & Controls --- */
+        #controls-panel {
+            grid-area: header;
+            background-color: var(--background-light);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-title {
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .tool-button, .action-button {
+            background: none;
+            border: 1px solid var(--text-color);
+            color: var(--text-color);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+        }
+
+        .tool-button.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #color-picker {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--text-color);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #width-slider {
+            width: 100px;
+        }
+
+        .clear-btn {
+            background-color: #E53935;
+            border-color: #E53935;
+        }
+
+        /* --- Drawing Area --- */
+        #drawing-area {
+            grid-area: main;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: var(--canvas-bg);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            height: 600px; /* Set a fixed height for the mockup */
+        }
+
+        #drawing-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Cursor Indicators (Mockup element styles) --- */
+        #cursor-indicators {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 10;
+        }
+
+        .cursor-indicator {
+            position: absolute;
+            transition: transform 0.05s ease-out; 
+            transform: translate(-50%, -100%); 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .cursor-name {
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-top: 5px;
+            color: white;
+            font-weight: 600;
+            white-space: nowrap;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+
+        /* --- Sidebar --- */
+        #users-sidebar {
+            grid-area: sidebar;
+            background-color: var(--background-light);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #users-sidebar h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #4b5563;
+            padding-bottom: 10px;
+        }
+
+        #user-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background-color: var(--background-dark);
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .user-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Header and Controls -->
+        <header id="controls-panel">
+            <h1 class="app-title">🌐 Co-Draw</h1>
+            
+            <!-- Tool Selection -->
+            <div id="tools" class="tool-group">
+                <button id="tool-brush" class="tool-button active" data-tool="brush">Brush</button>
+                <button id="tool-eraser" class="tool-button" data-tool="eraser">Eraser</button>
+            </div>
+
+            <!-- Color Picker -->
+            <input type="color" id="color-picker" value="#1E88E5" title="Pick Color">
+            
+            <!-- Stroke Width -->
+            <input type="range" id="width-slider" min="1" max="50" value="5" title="Stroke Width">
+            <span id="current-width">5px</span>
+
+            <!-- Global Action Buttons -->
+            <div id="actions" class="tool-group">
+                <button id="undo-button" class="action-button">Undo Global</button>
+                <button id="clear-button" class="action-button clear-btn">Clear Canvas</button>
+            </div>
+
+            <!-- User Status -->
+            <div id="user-info" class="user-status">
+                <!-- User name is set by JS -->
+                <span id="user-name" style="color:#E53935;">User 1 (You) - MOCKUP MODE</span>
+            </div>
+        </header>
+
+        <!-- Main Drawing Area -->
+        <main id="drawing-area">
+            <div id="cursor-indicators">
+                <!-- Mockup of a remote user's cursor -->
+                 <div class="cursor-indicator" style="transform: translate(300px, 150px);">
+                    <div class="cursor-dot" style="background-color: #43A047; border-color: #43A047;"></div>
+                    <div class="cursor-name" style="background-color: #43A047;">Remote User B</div>
+                </div>
+                 <div class="cursor-indicator" style="transform: translate(650px, 400px);">
+                    <div class="cursor-dot" style="background-color: #FFB300; border-color: #FFB300;"></div>
+                    <div class="cursor-name" style="background-color: #FFB300;">Drawing Fast</div>
+                </div>
+            </div>
+            <canvas id="drawing-canvas"></canvas>
+        </main>
+
+        <!-- Sidebar for User List -->
+        <aside id="users-sidebar">
+            <h2>Online Users (<span id="user-count">3</span>)</h2>
+            <ul id="user-list">
+                <!-- Mockup of user list -->
+                <li class="user-item" data-user-id="mock-1" data-user-name="User 1 (You)" data-user-color="#E53935">
+                    <span class="user-color-dot" style="background-color: #E53935;"></span>
+                    <span>User 1</span> <small>(You)</small>
+                </li>
+                 <li class="user-item" data-user-id="mock-2" data-user-name="Remote User B" data-user-color="#43A047">
+                    <span class="user-color-dot" style="background-color: #43A047;"></span>
+                    <span>Remote User B</span>
+                </li>
+                 <li class="user-item" data-user-id="mock-3" data-user-name="Drawing Fast" data-user-color="#FFB300">
+                    <span class="user-color-dot" style="background-color: #FFB300;"></span>
+                    <span>Drawing Fast</span>
+                </li>
+            </ul>
+        </aside>
+    </div>
+  </body>
+</html>
+<script>
+        // --- MOCK WebSocket Client ---
+        // This replaces the external Socket.io and prevents errors in the mockup
+        class WebSocketClient {
+            constructor(callbacks) {
+                console.warn("MOCKUP MODE: WebSocket Client initialized. No connection to server.");
+                // Provide fake initial data for the canvas to draw
+                callbacks.onInit({ id: 'mock-local-1', color: '#E53935', name: 'User 1' }, []);
+            }
+            sendStrokeUpdate(strokeData) { /* Mocked */ }
+            sendStrokeEnd(strokeData) { console.log('Mocked Stroke Sent:', strokeData); }
+            sendUndoRequest() { alert('MOCK: Global Undo Requested (not functional without server).'); }
+            sendCursorMove(position) { /* Mocked */ }
+        }
+        window.WebSocketClient = WebSocketClient;
+
+        // --- Utility Functions ---
+        // These are necessary for the main JS to run
+        window.utils = {
+            createCursorElement: (userId, userName, color) => { /* Mocked */ return document.createElement('div'); },
+            updateCursorPosition: (element, x, y) => { /* Mocked */ }
+        };
+
+        // --- Canvas Manager Class (client/canvas.js logic) ---
+        class CanvasManager {
+            constructor(canvasElement) {
+                this.canvas = canvasElement;
+                this.ctx = canvasElement.getContext('2d');
+                this.resizeCanvas();
+                window.addEventListener('resize', this.resizeCanvas.bind(this));
+                this.currentTool = 'brush';
+                this.currentColor = '#1E88E5';
+                this.currentWidth = 5;
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.ctx.imageSmoothingEnabled = true;
+                this.localStroke = null;
+                this.onStrokeUpdate = null;
+                this.onStrokeEnd = null;
+                this._setupEventListeners();
+            }
+
+            resizeCanvas() {
+                const rect = this.canvas.parentElement.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+            }
+
+            _setupEventListeners() {
+                ['mousedown', 'touchstart'].forEach(e => this.canvas.addEventListener(e, (evt) => {
+                    this._startDrawing(evt.touches ? evt.touches[0] : evt);
+                }));
+                ['mousemove', 'touchmove'].forEach(e => this.canvas.addEventListener(e, (evt) => {
+                    evt.preventDefault();
+                    this._draw(evt.touches ? evt.touches[0] : evt);
+                }));
+                ['mouseup', 'mouseout', 'touchend'].forEach(e => this.canvas.addEventListener(e, this._stopDrawing.bind(this)));
+            }
+
+            _startDrawing(e) {
+                if (this.localStroke) return;
+                this.localStroke = {
+                    tool: this.currentTool,
+                    color: this.currentTool === 'eraser' ? 'white' : this.currentColor,
+                    width: this.currentWidth,
+                    points: [[e.offsetX, e.offsetY]]
+                };
+                this.ctx.strokeStyle = this.localStroke.color;
+                this.ctx.lineWidth = this.localStroke.width;
+                this.ctx.globalCompositeOperation = this.localStroke.tool === 'eraser' ? 'destination-out' : 'source-over';
+                this.ctx.beginPath();
+                this.ctx.moveTo(e.offsetX, e.offsetY);
+            }
+            
+            _throttleTimer = null;
+            THROTTLE_RATE = 50;
+
+            _draw(e) {
+                if (!this.localStroke) return;
+                this.ctx.lineTo(e.offsetX, e.offsetY);
+                this.ctx.stroke();
+                this.localStroke.points.push([e.offsetX, e.offsetY]);
+
+                if (this.onStrokeUpdate && !this._throttleTimer) {
+                    this._throttleTimer = setTimeout(() => {
+                        this.onStrokeUpdate(this.localStroke);
+                        this._throttleTimer = null;
+                    }, this.THROTTLE_RATE);
+                }
+            }
+
+            _stopDrawing() {
+                if (!this.localStroke) return;
+                if (this.onStrokeEnd) {
+                    this.onStrokeEnd(this.localStroke);
+                }
+                this.localStroke = null;
+                this.ctx.globalCompositeOperation = 'source-over';
+            }
+
+            renderStroke(stroke) {
+                 if (stroke.points.length < 1) return;
+                const { points, color, width, tool } = stroke;
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = width;
+                this.ctx.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
+                this.ctx.beginPath();
+                const [startX, startY] = points[0];
+                this.ctx.moveTo(startX, startY);
+                for (let i = 1; i < points.length; i++) {
+                    const [x, y] = points[i];
+                    this.ctx.lineTo(x, y);
+                }
+                this.ctx.stroke();
+                this.ctx.globalCompositeOperation = 'source-over';
+            }
+            
+            clearAndRedraw(history = []) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                history.forEach(stroke => this.renderStroke(stroke));
+            }
+            
+            setTool(tool) { this.currentTool = tool; }
+            setColor(color) { this.currentColor = color; }
+            setWidth(width) { this.currentWidth = width; }
+        }
+        window.CanvasManager = CanvasManager;
+
+
+        // --- Application Initialization (client/main.js logic) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvasEl = document.getElementById('drawing-canvas');
+            const toolsEl = document.getElementById('tools');
+            const colorPicker = document.getElementById('color-picker');
+            const widthSlider = document.getElementById('width-slider');
+            const currentWidthEl = document.getElementById('current-width');
+            const undoButton = document.getElementById('undo-button');
+            const clearButton = document.getElementById('clear-button');
+            const drawingArea = document.getElementById('drawing-area');
+            
+            let canvasManager;
+            let wsClient;
+            
+            // 1. Initialize Canvas Manager
+            canvasManager = new CanvasManager(canvasEl);
+
+            // 2. Initialize WebSocket Client (MOCK)
+            const networkCallbacks = {
+                onInit: (user, history) => { 
+                    document.getElementById('user-name').textContent = `${user.name} (You) - MOCKUP MODE`;
+                    document.getElementById('user-name').style.color = user.color;
+                    canvasManager.clearAndRedraw(history);
+                },
+                onNewStroke: (stroke) => { canvasManager.renderStroke(stroke); },
+                onHistoryUpdated: (history) => { canvasManager.clearAndRedraw(history); },
+                onCursorUpdate: (data) => { /* Mocked */ },
+                onUserListUpdate: (users) => { /* Mocked */ }
+            };
+            wsClient = new WebSocketClient(networkCallbacks);
+
+            // 3. Wire Canvas Manager to WebSocket Client
+            canvasManager.onStrokeUpdate = (strokeData) => { wsClient.sendStrokeUpdate(strokeData); };
+            canvasManager.onStrokeEnd = (strokeData) => { wsClient.sendStrokeEnd(strokeData); };
+
+            // 4. UI Event Listeners
+            toolsEl.addEventListener('click', (e) => {
+                const button = e.target.closest('.tool-button');
+                if (button) {
+                    toolsEl.querySelectorAll('.tool-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    canvasManager.setTool(button.dataset.tool);
+                }
+            });
+
+            colorPicker.addEventListener('change', (e) => { canvasManager.setColor(e.target.value); });
+            
+            widthSlider.addEventListener('input', (e) => {
+                const width = parseInt(e.target.value);
+                currentWidthEl.textContent = `${width}px`;
+                canvasManager.setWidth(width);
+            });
+            
+            undoButton.addEventListener('click', () => { wsClient.sendUndoRequest(); });
+            clearButton.addEventListener('click', () => { 
+                if (confirm("MOCKUP WARNING: This button is not functional without the Node.js server. Click OK to see a local clear.")) {
+                     canvasManager.clearAndRedraw([]); 
+                }
+            });
+            
+            drawingArea.addEventListener('mousemove', (e) => {
+                if (!drawingArea.throttleTimer) {
+                    drawingArea.throttleTimer = setTimeout(() => {
+                        // Mocked: wsClient.sendCursorMove({ x: e.offsetX, y: e.offsetY });
+                        drawingArea.throttleTimer = null;
+                    }, 33);
+                }
+            });
+            
+            currentWidthEl.textContent = `${widthSlider.value}px`;
+        });
+    </script>
+</body>
+</html>

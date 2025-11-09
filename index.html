@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Drawing Canvas (Co-Draw)</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div id="app-container">
+        <header id="controls-panel">
+            <h1 class="app-title">🌐 Co-Draw</h1>
+            
+            <div id="tools" class="tool-group">
+                <button id="tool-brush" class="tool-button active" data-tool="brush">Brush</button>
+                <button id="tool-eraser" class="tool-button" data-tool="eraser">Eraser</button>
+            </div>
+
+            <input type="color" id="color-picker" value="#1E88E5" title="Pick Color">
+            
+            <input type="range" id="width-slider" min="1" max="50" value="5" title="Stroke Width">
+            <span id="current-width">5px</span>
+
+            <div id="actions" class="tool-group">
+                <button id="undo-button" class="action-button">Undo Global</button>
+                <button id="clear-button" class="action-button clear-btn">Clear Canvas</button>
+            </div>
+
+            <div id="user-info" class="user-status">
+                <span id="user-name" style="color:#E53935;">User 1 (You) - MOCKUP MODE</span>
+            </div>
+        </header>
+
+        <main id="drawing-area">
+            <div id="cursor-indicators">
+                <div class="cursor-indicator" style="transform: translate(300px, 150px);">
+                    <div class="cursor-dot" style="background-color: #43A047; border-color: #43A047;"></div>
+                    <div class="cursor-name" style="background-color: #43A047;">Remote User B</div>
+                </div>
+                 <div class="cursor-indicator" style="transform: translate(650px, 400px);">
+                    <div class="cursor-dot" style="background-color: #FFB300; border-color: #FFB300;"></div>
+                    <div class="cursor-name" style="background-color: #FFB300;">Drawing Fast</div>
+                </div>
+            </div>
+            <canvas id="drawing-canvas"></canvas>
+        </main>
+
+        <aside id="users-sidebar">
+            <h2>Online Users (<span id="user-count">3</span>)</h2>
+            <ul id="user-list">
+                <li class="user-item" data-user-id="mock-1" data-user-name="User 1 (You)" data-user-color="#E53935">
+                    <span class="user-color-dot" style="background-color: #E53935;"></span>
+                    <span>User 1</span> <small>(You)</small>
+                </li>
+                 <li class="user-item" data-user-id="mock-2" data-user-name="Remote User B" data-user-color="#43A047">
+                    <span class="user-color-dot" style="background-color: #43A047;"></span>
+                    <span>Remote User B</span>
+                </li>
+                 <li class="user-item" data-user-id="mock-3" data-user-name="Drawing Fast" data-user-color="#FFB300">
+                    <span class="user-color-dot" style="background-color: #FFB300;"></span>
+                    <span>Drawing Fast</span>
+                </li>
+            </ul>
+        </aside>
+    </div>
+
+    <script src="canvas-manager.js"></script>
+    <script src="websocket-client.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
